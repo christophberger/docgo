@@ -1,21 +1,30 @@
 body {
     background: #f0f0f0;
-    margin: 0px;
-    padding: 0px;
+    margin: 0em;
+    padding: 0em;
     font-family: 'Lato', 'Helvetica', sans-serif;
 	font-size: 1em;
-	line-height: 1.6em;
+	line-height: 1.3em;
 }
 
-table {
+#docgo div.table {
+	display: table;
 	border-collapse: collapse;
 }
 
+#docgo div.tr {
+	display: table-row;
+}
+
+#docgo div.td {
+	display: table-cell;
+}
+
 #docgo p {
-    margin-top: 0px;
-    margin-right: 0px;
+    margin-top: 0em;
+    margin-right: 0em;
     margin-bottom: 0.8em;
-    margin-left: 0px;
+    margin-left: 0em;
 }
 
 #docgo div {
@@ -46,10 +55,10 @@ table {
 	font-family: 'Averia Libre', 'Lato', 'Helvetica', sans-serif;
 	line-height: 1em;
     text-align: left;
-    margin-top: 0px;
-    margin-right: 0px;
-    margin-bottom: 15px;
-    margin-left: 0px;
+    margin-top: 0em;
+    margin-right: 0em;
+    margin-bottom: 1.6em;
+    margin-left: 0em;
 }
 
 #docgo h1 {
@@ -65,20 +74,17 @@ table {
 	width:auto;
     padding-top: 1em;
     padding-right: 1em;
-    padding-bottom: 1px;
     padding-left: 2em;
     overflow-x: hidden;
 }
 
 #docgo .code {
-    min-width: 30em;
 	font-size: 80%;
 	width:auto;
-	margin-right: 0px;
+	margin-right: 0em;
     padding-left: 2em;
     padding-right: 1em;
-    border-left: 1px;
-    overflow-x: hidden;
+	overflow-x: auto;
     vertical-align: top;
 	background-color: #303030;
 }
@@ -92,14 +98,19 @@ table {
 @media 
 only screen and (max-width: 60em) {
 
-	table { 
+	#docgo div.table { 
+		display: block;
 	  	width: 100%; 
 		margin: 0;
 		border: none;
 	}
 
+	#docgo div.tr, #docgo div.td { 
+		display: block; 
+	}
+
 	#docgo .doc {
-		min-width: 20em;
+		min-width: 0em;
 	}
 }
 
@@ -107,24 +118,11 @@ only screen and (max-width: 60em) {
 @media 
 only screen and (max-width: 45em) {
 
-	th, tr, td { 
-		display: block; 
-	}
-
-	tr {
-		padding: 1em;
-		border-top: 0 none;
+	#docgo div.tr {
+		padding: 0em;
 	}
  
-	th {
-		padding: 0;
-	}
- 
-	td {
-		padding: 1em 0 0;
-	}
-
-	#docgo .doc {
-		min-width: 10em;
+	#docgo div.td {
+		padding: 0.5em .5em .5em;
 	}
 }

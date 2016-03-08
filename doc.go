@@ -39,7 +39,10 @@ import (
 	"bytes"
 	"flag"
 	"go/build"
+	"io"
 	"io/ioutil"
+	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -50,14 +53,16 @@ import (
 )
 
 var (
-	templ  *template.Template                // html template for generated docs
-	style  string                            // css styles to inline
-	match  = regexp.MustCompile(`^\s*//\s?`) // pattern for extracted comments
-	sep    = "/*[docgoseparator]*/"          // replacement for comment groups
-	unsep  = regexp.MustCompile(`<div class="comment">/\*\[docgoseparator\]\*/</div>`)
-	outdir = flag.String("outdir", ".", "output directory for docs")
-	resdir = flag.String("resdir", "", "directory containing CSS and templates")
-	pkg    = "github.com/christophberger/docgo" // for locating the resources if not specified
+	templ       *template.Template                // html template for generated docs
+	match       = regexp.MustCompile(`^\s*//\s?`) // pattern for extracted comments
+	sep         = "/*[docgoseparator]*/"          // replacement for comment groups
+	unsep       = regexp.MustCompile(`<div class="comment">/\*\[docgoseparator\]\*/</div>`)
+	outdir      = flag.String("outdir", ".", "output directory for html & css")
+	resdir      = flag.String("resdir", "", "directory containing CSS and templates")
+	csspath     = flag.String("csspath", "", "relative path to CSS file, for use with the <link> element")
+	cssfilename = "doc.css"
+	tplfilename = "doc.templ"
+	pkg         = "github.com/christophberger/docgo" // for locating the resources if not specified
 )
 
 // ## Generating documentation
@@ -65,7 +70,7 @@ var (
 type docs struct {
 	Filename string
 	Sections []*section
-	Style    string
+	CssPath  string
 }
 
 type section struct {
@@ -81,7 +86,11 @@ func GenerateDocs(title, src string) string {
 	markdownComments(sections)
 
 	var b bytes.Buffer
-	err := templ.Execute(&b, docs{title, sections, style})
+	cleanCssPath := ""
+	if len(*csspath) > 0 {
+		cleanCssPath = path.Clean(*csspath) + string(os.PathSeparator)
+	}
+	err := templ.Execute(&b, docs{title, sections, cleanCssPath + cssfilename})
 	if err != nil {
 		panic(err.Error())
 	}
@@ -162,14 +171,57 @@ func findResources() string {
 	return p.Dir
 }
 
-// Load the HTML template and CSS styles for output.
-func loadResources(path string) {
-	data, err := ioutil.ReadFile(path + "/doc.css")
+// Load the HTML template
+func loadTemplate(path string) {
+	templ = template.Must(template.ParseFiles(path + string(os.PathSeparator) + tplfilename))
+}
+
+// copyFile copies the contents of src to dst atomically.
+// Copied from github.com/pkg/fileutils/copy.go.
+// (c) Dave Cheney - see LICENSE_CopyFile.txt.
+func copyFile(dst, src string) error {
+	in, err := os.Open(src)
 	if err != nil {
-		panic(err.Error())
+		return err
 	}
-	style = string(data)
-	templ = template.Must(template.ParseFiles(path + "/doc.templ"))
+	defer in.Close()
+	tmp, err := ioutil.TempFile(filepath.Dir(dst), "copyfile")
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(tmp, in)
+	if err != nil {
+		tmp.Close()
+		os.Remove(tmp.Name())
+		return err
+	}
+	if err := tmp.Close(); err != nil {
+		os.Remove(tmp.Name())
+		return err
+	}
+	const perm = 0644
+	if err := os.Chmod(tmp.Name(), perm); err != nil {
+		os.Remove(tmp.Name())
+		return err
+	}
+	if err := os.Rename(tmp.Name(), dst); err != nil {
+		os.Remove(tmp.Name())
+		return err
+	}
+	return nil
+}
+
+// copyCssFile() copies
+func copyCssFile() {
+	// Copy only if dest path != source path
+	src := path.Clean(*resdir)
+	dst := path.Clean(*outdir + *csspath)
+	if dst != src {
+		err := copyFile(dst+string(os.PathSeparator)+cssfilename, src+string(os.PathSeparator)+cssfilename)
+		if err != nil {
+			panic(err.Error())
+		}
+	}
 }
 
 // Generate documentation for a source file.
@@ -181,15 +233,16 @@ func processFile(filename string) {
 	name := filepath.Base(filename)
 	outname := filepath.Join(*outdir, name[:len(name)-2]) + "html"
 	docs := GenerateDocs(name, string(src))
-	err2 := ioutil.WriteFile(outname, []byte(docs), 0666)
-	if err2 != nil {
-		panic(err2.Error())
+	err = ioutil.WriteFile(outname, []byte(docs), 0666)
+	if err != nil {
+		panic(err.Error())
 	}
+	copyCssFile()
 }
 
 func main() {
 	flag.Parse()
-	loadResources(findResources())
+	loadTemplate(findResources())
 	for _, filename := range flag.Args() {
 		processFile(filename)
 	}
