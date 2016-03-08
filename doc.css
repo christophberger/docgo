@@ -1,13 +1,20 @@
 body {
-    background: rgb(225, 225, 225);
+    background: #f0f0f0;
     margin: 0px;
     padding: 0px;
+    font-family: 'Lato', 'Helvetica', sans-serif;
+	font-size: 1em;
+	line-height: 1.6em;
+}
+
+table {
+	border-collapse: collapse;
 }
 
 #docgo p {
     margin-top: 0px;
     margin-right: 0px;
-    margin-bottom: 15px;
+    margin-bottom: 0.8em;
     margin-left: 0px;
 }
 
@@ -15,20 +22,12 @@ body {
     display: inline;
 }
 
-#docgo #background {
-    position: fixed;
-    top: 0; left: 525px; right: 0; bottom: 0;
-    background: rgb(47, 47, 47);
-    border-left: 1px solid #e5e5ee;
-    z-index: -1;
-}
-
 #docgo .keyword {
-    color: rgb(250, 200, 100);
+    color: #f2a14b;
 }
 
 #docgo .literal {
-    color: rgb(140, 190, 100);
+    color: #8cbe64;
 }
 
 #docgo .ident {
@@ -36,13 +35,16 @@ body {
 }
 
 #docgo .operator {
-    color: white;
+	color: white;
 }
 
 #docgo .comment {
+    color: #8cbe64;
 }
 
 #docgo h1, h2, h3, h4, h5 {
+	font-family: 'Averia Libre', 'Lato', 'Helvetica', sans-serif;
+	line-height: 1em;
     text-align: left;
     margin-top: 0px;
     margin-right: 0px;
@@ -51,37 +53,78 @@ body {
 }
 
 #docgo h1 {
-    margin-top: 40px;
+    margin-top: 1.6em;
 }
 
 #docgo .doc {
     vertical-align: top;
-    font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;
-    font-size: 15px;
-    line-height: 22px;
-    color: black;
-    min-width: 450px;
-    max-width: 450px;
-    padding-top: 10px;
-    padding-right: 25px;
+    color: #404040;
+	font-size: 100%;
+    min-width: 20em;
+    max-width: 30em;
+	width:auto;
+    padding-top: 1em;
+    padding-right: 1em;
     padding-bottom: 1px;
-    padding-left: 50px;
+    padding-left: 2em;
     overflow-x: hidden;
 }
 
 #docgo .code {
-    min-width: 650px;
-    max-width: 650px;
-    padding-left: 25px;
-    padding-right: 15px;
+    min-width: 30em;
+	font-size: 80%;
+	width:auto;
+	margin-right: 0px;
+    padding-left: 2em;
+    padding-right: 1em;
     border-left: 1px;
     overflow-x: hidden;
     vertical-align: top;
+	background-color: #303030;
 }
 
 #docgo .code pre code  {
-    font-size: 12px;
-    line-height: 18px;
     font-family: Menlo, Monaco, Consolas, "Lucida Console", monospace;
     color: rgb(120, 120, 120);
+}
+
+/* Narrow viewports */
+@media 
+only screen and (max-width: 60em) {
+
+	table { 
+	  	width: 100%; 
+		margin: 0;
+		border: none;
+	}
+
+	#docgo .doc {
+		min-width: 20em;
+	}
+}
+
+/* Very narrow viewports */
+@media 
+only screen and (max-width: 45em) {
+
+	th, tr, td { 
+		display: block; 
+	}
+
+	tr {
+		padding: 1em;
+		border-top: 0 none;
+	}
+ 
+	th {
+		padding: 0;
+	}
+ 
+	td {
+		padding: 1em 0 0;
+	}
+
+	#docgo .doc {
+		min-width: 10em;
+	}
 }

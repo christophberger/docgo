@@ -2,27 +2,27 @@
 // (http://github.com/jashkenas)'s [docco] (http://jashkenas.github.com/docco/),
 // a literate-programming-style documentation generator.  Running docgo on your
 // Go source files produces HTML with comments and code side-by-side.
-// 
+//
 // Comments are processed by [Markdown]
 // (http://daringfireball.net/projects/markdown) using [Russ Ross]
 // (http://github.com/russross)'s [BlackFriday]
 // (http://github.com/russross/blackfriday) library, and code is
 // syntax-highlighted using [litebrite](http://dhconnelly.github.com/litebrite),
 // a Go syntax highlighting library.
-// 
+//
 // The source is available on [GitHub](http://github.com/dhconnelly/docgo).
-// 
+//
 // With a recent Go weekly build (I'm using `weekly.2012-2-07`), you can get,
 // install, and run docgo by doing the following at a command line:
-// 
+//
 // `go get github.com/dhconnelly/docgo`<br>
 // `go install github.com/dhconnelly/docgo`<br>
 // `docgo file.go`
-// 
+//
 // This will create `file.html` in the current directory.
-// 
+//
 // There are two command-line flags:
-// 
+//
 // - `resdir`: a path to the directory containing the CSS styles and HTML
 //   templates (this is usually the docgo source directory)
 // - `outdir`: the directory to which the generated HTML should be writen
@@ -38,14 +38,15 @@ package main
 import (
 	"bytes"
 	"flag"
-	"github.com/dhconnelly/litebrite"
-	"github.com/russross/blackfriday"
 	"go/build"
 	"io/ioutil"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"text/template"
+
+	"github.com/dhconnelly/litebrite"
+	"github.com/russross/blackfriday"
 )
 
 var (
@@ -56,7 +57,7 @@ var (
 	unsep  = regexp.MustCompile(`<div class="comment">/\*\[docgoseparator\]\*/</div>`)
 	outdir = flag.String("outdir", ".", "output directory for docs")
 	resdir = flag.String("resdir", "", "directory containing CSS and templates")
-	pkg    = "github.com/dhconnelly/docgo" // for locating the resources if not specified
+	pkg    = "github.com/christophberger/docgo" // for locating the resources if not specified
 )
 
 // ## Generating documentation
