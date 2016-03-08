@@ -1,0 +1,4 @@
+package: github.com/christophberger/docgo
+import:
+- package: github.com/dhconnelly/litebrite
+- package: github.com/russross/blackfriday
