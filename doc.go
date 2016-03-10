@@ -129,7 +129,7 @@ func markdownComments(sections []*section) {
 	for _, section := range sections {
 		// IMHO BlackFriday should use a string interface, since it
 		// operates on text (not arbitrary binary) data...
-		section.Doc = string(blackfriday.MarkdownBasic([]byte(section.Doc)))
+		section.Doc = string(blackfriday.MarkdownCommon([]byte(section.Doc)))
 	}
 }
 
