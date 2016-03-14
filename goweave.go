@@ -1,9 +1,11 @@
 // # goweave
 //
-// goweave creates an HTML file from a Go source file, rendering comments and
-// code side-by-side. Comments can use Markdown formatting; see below for details.
+// goweave is meant to be the "weave" part of Literate Programming for Go.
+// Basically it creates an HTML file from a Go source file, rendering comments and
+// code side-by-side. Comments can use Markdown formatting as accepted by the
+// MarkdownCommon() method of the BlackFriday library; see below for details.
 //
-// goweave is based on the great [docgo](https://github.com/dhconnelly/docgo)
+// goweave is based on the wonderful [docgo](https://github.com/dhconnelly/docgo)
 // project by Daniel Connelly. Although I shuffled much of the code
 // around, added new code, removed some, and finally ended up with substantial
 // changes to the resulting behavior, docgo saved me a lot--a LOT!--of time as
@@ -30,7 +32,7 @@
 //
 // * LICENSE_godoc.md
 // * LICENSE_litebrite.md
-// * LICENSE_blackfriday
+// * LICENSE_blackfriday.txt
 // * LICENSE_CopyFile.txt
 
 // ## Imports and globals
