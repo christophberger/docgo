@@ -55,8 +55,6 @@ import (
 var (
 	templ       *template.Template                // html template for generated docs
 	match       = regexp.MustCompile(`^\s*//\s?`) // pattern for extracted comments
-	sep         = "/*[docgoseparator]*/"          // replacement for comment groups
-	unsep       = regexp.MustCompile(`<div class="comment">/\*\[docgoseparator\]\*/</div>`)
 	outdir      = flag.String("outdir", ".", "output directory for html & css")
 	resdir      = flag.String("resdir", "", "directory containing CSS and templates")
 	csspath     = flag.String("csspath", "", "relative path to CSS file, for use with the <link> element")
@@ -137,23 +135,13 @@ func markdownComments(sections []*section) {
 
 // Apply syntax highlighting to each section's code.
 func highlightCode(sections []*section) {
-	// Rejoin the source code fragments, using sep as delimiter
-	segments := make([]string, 0)
-	for _, section := range sections {
-		segments = append(segments, section.Code)
-	}
-	code := strings.Join(segments, sep)
-
-	// Highlight the joined source
 	h := litebrite.Highlighter{"operator", "ident", "literal", "keyword", "comment"}
-	hlcode := h.Highlight(code)
-
-	// Collect the code between subsequent `unsep`s
-	matches := append(unsep.FindAllStringIndex(hlcode, -1), []int{len(hlcode), 0})
-	lastend := 0
-	for i, match := range matches {
-		sections[i].Code = hlcode[lastend:match[0]]
-		lastend = match[1]
+	for i := range sections {
+		if strings.Trim(strings.TrimSpace(sections[i].Code), "\n") != "" {
+			sections[i].Code = h.Highlight(sections[i].Code)
+		} else {
+			sections[i].Code = "" // make empty Code *really* empty
+		}
 	}
 }
 

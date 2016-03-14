@@ -13,7 +13,11 @@
 		{{range .Sections}}
 		<div class="tr section">
 			<div class="td doc">{{.Doc}}</div>
-			<div class="td code"><pre><code>{{.Code}}</code></pre></div>
+			{{if .Code}}
+				<div class="td code"><pre><code>{{.Code}}</code></pre></div>
+			{{else}}
+				<div class="td code empty"></div>
+			{{end}}
 		</div>
 		{{end}}
 	</div>

@@ -112,6 +112,10 @@ only screen and (max-width: 60em) {
 	#docgo .doc {
 		min-width: 0em;
 	}
+
+	#docgo div.td.code.empty { 
+		display: none;
+	}
 }
 
 /* Very narrow viewports */
