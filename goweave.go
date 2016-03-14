@@ -1,7 +1,17 @@
-// docgo is a [Go](http://golang.org) implementation of [Jeremy Ashkenas]
+// # goweave
+//
+// goweave creates an HTML file from a Go source file, rendering comments and
+// code side-by-side. Comments can use Markdown formatting; see below for details.
+//
+// goweave is based on the great [docgo](https://github.com/dhconnelly/docgo)
+// project by Daniel Connelly. Although I shuffled much of the code
+// around, added new code, removed some, and finally ended up with substantial
+// changes to the resulting behavior, docgo saved me a lot--a LOT!--of time as
+// it had all the groundworks already done for me.
+//
+// docgo in turn is a [Go](http://golang.org) implementation of [Jeremy Ashkenas]
 // (http://github.com/jashkenas)'s [docco] (http://jashkenas.github.com/docco/),
-// a literate-programming-style documentation generator.  Running docgo on your
-// Go source files produces HTML with comments and code side-by-side.
+// a literate-programming-style documentation generator.
 //
 // Comments are processed by [Markdown]
 // (http://daringfireball.net/projects/markdown) using [Russ Ross]
@@ -10,26 +20,18 @@
 // syntax-highlighted using [litebrite](http://dhconnelly.github.com/litebrite),
 // a Go syntax highlighting library.
 //
-// The source is available on [GitHub](http://github.com/dhconnelly/docgo).
 //
-// With a recent Go weekly build (I'm using `weekly.2012-2-07`), you can get,
-// install, and run docgo by doing the following at a command line:
+// goweave is copyright 2016 by Christoph Berger. All rights reserved.
+// This source code is governed by a BSD-style license that can be found in
+// the `LICENSE.txt` file.
 //
-// `go get github.com/dhconnelly/docgo`<br>
-// `go install github.com/dhconnelly/docgo`<br>
-// `docgo file.go`
+// License files for godoc, litebrite, blackfriday, and the CopyFile function from
+// github.com/pkg/fileutils/copy.go:
 //
-// This will create `file.html` in the current directory.
-//
-// There are two command-line flags:
-//
-// - `resdir`: a path to the directory containing the CSS styles and HTML
-//   templates (this is usually the docgo source directory)
-// - `outdir`: the directory to which the generated HTML should be writen
-
-// docgo is copyright 2012 Daniel Connelly.  All rights reserved.  Use of
-// this source code is governed by a BSD-style license that can be found in
-// the `LICENSE` file.
+// * LICENSE_godoc.md
+// * LICENSE_litebrite.md
+// * LICENSE_blackfriday
+// * LICENSE_CopyFile.txt
 
 // ## Imports and globals
 
@@ -60,7 +62,7 @@ var (
 	csspath     = flag.String("csspath", "", "relative path to CSS file, for use with the <link> element")
 	cssfilename = "doc.css"
 	tplfilename = "doc.templ"
-	pkg         = "github.com/christophberger/docgo" // for locating the resources if not specified
+	pkg         = "github.com/christophberger/goweave" // for locating the resources if not specified
 )
 
 // ## Generating documentation
