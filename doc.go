@@ -106,17 +106,19 @@ func extractSections(source string) []*section {
 	current := new(section)
 
 	for _, line := range strings.Split(source, "\n") {
-		// When a candidate comment line is found, add it to the current
-		// comment group (or create a new section if code has already been
-		// added to the current section).
+		// When a candidate comment line is found, first test if we're currently
+		// in a Code group. If so, switch to a new section. Add the comment line
+		// to the section's Doc group.
 		if match.FindString(line) != "" {
 			if current.Code != "" {
 				sections = append(sections, current)
 				current = new(section)
 			}
-			// Strip out the comment delimiters
+			// Strip out the comment delimiters and add the line to the
+			// current doc section.
 			current.Doc += match.ReplaceAllString(line, "") + "\n"
 		} else {
+			// No comment line found, so add the current line to the Code group.
 			current.Code += line + "\n"
 		}
 	}
