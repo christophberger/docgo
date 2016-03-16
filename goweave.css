@@ -48,7 +48,7 @@ body {
 }
 
 #goweave .comment {
-    color: #8cbe64;
+    color: #aaa
 }
 
 #goweave h1, h2, h3, h4, h5 {
@@ -72,18 +72,22 @@ body {
     min-width: 20em;
     max-width: 30em;
 	width:auto;
-    padding-top: 1em;
+    padding-top: 0em;
     padding-right: 1em;
     padding-left: 2em;
     overflow-x: hidden;
 }
 
+#goweave .code pre {
+	margin-top: 0em
+}
+
 #goweave .code {
 	font-size: 80%;
 	width:auto;
-	margin-right: 0em;
     padding-left: 2em;
     padding-right: 1em;
+	margin-right: 0em;
 	overflow-x: auto;
     vertical-align: top;
 	background-color: #303030;
@@ -111,6 +115,11 @@ only screen and (max-width: 60em) {
 
 	#goweave .doc {
 		min-width: 0em;
+		padding-top: 1em
+	}
+
+	#goweave .code {
+		padding-top: 1em
 	}
 
 	#goweave div.td.code.empty { 
