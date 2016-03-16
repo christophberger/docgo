@@ -22,6 +22,11 @@
 // syntax-highlighted using [litebrite](http://dhconnelly.github.com/litebrite),
 // a Go syntax highlighting library.
 //
+// Optionally you can generate a Markdown document instead of HTML. In this case,
+// you need to provide your own CSS that matches the output of your Markdown
+// renderer.
+// Also ensure your Markdown renderer is able to process "````````go" tags correctly.
+//
 //
 // goweave is copyright 2016 by Christoph Berger. All rights reserved.
 // This source code is governed by a BSD-style license that can be found in
@@ -52,6 +57,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/dhconnelly/litebrite"
 	"github.com/russross/blackfriday"
 )
@@ -60,8 +66,9 @@ var (
 	templ       *template.Template                // html template for generated docs
 	match       = regexp.MustCompile(`^\s*//\s?`) // pattern for extracted comments
 	outdir      = flag.String("outdir", ".", "output directory for html & css")
-	resdir      = flag.String("resdir", "", "directory containing CSS and templates")
+	resdir      = flag.String("resdir", ".", "directory containing CSS and templates")
 	csspath     = flag.String("csspath", "", "relative path to CSS file, for use with the <link> element")
+	md          = flag.Bool("md", false, "generate Markdown document (default: HTML)")
 	cssfilename = "doc.css"
 	tplfilename = "doc.templ"
 	pkg         = "github.com/christophberger/goweave" // for locating the resources if not specified
@@ -82,21 +89,27 @@ type section struct {
 
 // Extract comments from source code, pass them through markdown, highlight the
 // code, and render to a string.
-func GenerateDocs(title, src string) string {
+func GenerateDocs(title, src string) (result string) {
 	sections := extractSections(src)
-	highlightCode(sections)
-	markdownComments(sections)
 
-	var b bytes.Buffer
-	cleanCssPath := ""
-	if len(*csspath) > 0 {
-		cleanCssPath = path.Clean(*csspath) + string(os.PathSeparator)
+	if !*md {
+		highlightCode(sections)
+		markdownComments(sections)
+		var b bytes.Buffer
+		cleanCssPath := ""
+		if len(*csspath) > 0 {
+			cleanCssPath = path.Clean(*csspath) + string(os.PathSeparator)
+		}
+		err := templ.Execute(&b, docs{title, sections, cleanCssPath + cssfilename})
+		if err != nil {
+			panic(err.Error())
+		}
+		result = b.String()
+	} else {
+		markdownCode(sections)
+		result = joinSections(sections)
 	}
-	err := templ.Execute(&b, docs{title, sections, cleanCssPath + cssfilename})
-	if err != nil {
-		panic(err.Error())
-	}
-	return b.String()
+	return result
 }
 
 // ## Processing sections
@@ -128,6 +141,15 @@ func extractSections(source string) []*section {
 	return append(sections, current)
 }
 
+// Join sections into a single string
+func joinSections(sections []*section) (res string) {
+	for _, s := range sections {
+		res += s.Doc
+		res += s.Code
+	}
+	return res
+}
+
 // Apply markdown to each section's documentation.
 func markdownComments(sections []*section) {
 	for _, section := range sections {
@@ -146,6 +168,13 @@ func highlightCode(sections []*section) {
 		} else {
 			sections[i].Code = "" // make empty Code *really* empty
 		}
+	}
+}
+
+// Put the code into Markdown code fences
+func markdownCode(sections []*section) {
+	for i := range sections {
+		sections[i].Code = "\n```go\n" + sections[i].Code + "```\n"
 	}
 }
 
@@ -205,13 +234,28 @@ func copyFile(dst, src string) error {
 	return nil
 }
 
-// copyCssFile() copies
+// copyCssFile() copies the CSS file to the destination.
+// Use -csspath=<path> to specify a relative destination path, e.g.:
+// goweave -csspath=css ...
 func copyCssFile() {
 	// Copy only if dest path != source path
-	src := path.Clean(*resdir)
-	dst := path.Clean(*outdir + *csspath)
+	ps := string(os.PathSeparator)
+	src := path.Clean(*resdir + ps + cssfilename)
+	dst := path.Clean(*outdir + ps + *csspath)
+	err := os.MkdirAll(dst, os.ModeDir)
+	if err != nil {
+		panic(err.Error())
+	}
+	err = os.Chmod(dst, 0644)
+	if err != nil {
+		panic(err.Error())
+	}
+	dst += ps + cssfilename
+	spew.Println(*csspath)
+	spew.Println(src)
+	spew.Println(dst)
 	if dst != src {
-		err := copyFile(dst+string(os.PathSeparator)+cssfilename, src+string(os.PathSeparator)+cssfilename)
+		err := copyFile(dst, src)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -225,7 +269,11 @@ func processFile(filename string) {
 		panic(err.Error())
 	}
 	name := filepath.Base(filename)
-	outname := filepath.Join(*outdir, name[:len(name)-2]) + "html"
+	ext := "html"
+	if *md {
+		ext = "md"
+	}
+	outname := filepath.Join(*outdir, name[:len(name)-2]) + ext
 	docs := GenerateDocs(name, string(src))
 	err = ioutil.WriteFile(outname, []byte(docs), 0666)
 	if err != nil {
