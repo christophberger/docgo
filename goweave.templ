@@ -1,12 +1,17 @@
-<!DOCTYPE html>
+{{if .Full}}<!DOCTYPE html>
 <html>
 <head>
 <title>{{.Filename}}</title>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{{if .InlineCSS}}
+<style type="text/css">{{.Style}}</style>
+{{else}}
 <link rel="stylesheet" href={{.CssPath}}>
+{{end}}
 </head>
 <body>
+{{end}}
 <div id="goweave">
 	<div id="background"></div>
 	<div class="table">
@@ -22,5 +27,5 @@
 		{{end}}
 	</div>
 </div>
-</body>
-</html>
+{{if .Full}}</body>
+</html>{{end}}
