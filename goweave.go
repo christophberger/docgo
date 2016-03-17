@@ -56,7 +56,7 @@ github.com/pkg/fileutils/copy.go:
 */
 
 // ## Imports and globals
-
+//
 package main
 
 import (
@@ -98,7 +98,7 @@ var (
 )
 
 // ## Generating documentation
-
+//
 type docs struct {
 	Filename  string
 	Sections  []*section
@@ -139,9 +139,9 @@ func GenerateDocs(title, src string) (result string) {
 }
 
 // ## Processing sections
-
+//
 // Determine if the current line belongs to a comment region. A comment region
-// is either a comment line (starting with `//`) or a `/*...*/` comment section.
+// is either a comment line (starting with `//`) or a `/*...*/` multi-line comment.
 func commentFinder() func(string) bool {
 	commentSectionInProgress := false
 	return func(line string) bool {
@@ -149,25 +149,22 @@ func commentFinder() func(string) bool {
 			// "//" Comment line found.
 			return true
 		}
+		// If the current line is at the start `/*` of a multi-line comment,
+		// set a flag to remember we're within a multi-line comment.
 		if commentStart.FindString(line) != "" {
-			// Found the start `/*` of a comment section.
-			// Set a flag to remember this next time.
 			commentSectionInProgress = true
 			return true
 		}
+		// At the end `*/` of a multi-line comment, clear the flag.
 		if commentEnd.FindString(line) != "" {
-			// End `*/` of a comment section. Clear the flag.
 			commentSectionInProgress = false
 			return true
 		}
+		// The current line is within a `/*...*/` section.
 		if commentSectionInProgress {
-			// We are currently within a `/*...*/` section.
 			return true
 		}
-		if len(line) == 0 {
-			// An empty line outside a `/*...*/` section is not a comment line.
-			return false
-		}
+		// Anything else is not a comment region.
 		return false
 	}
 }
@@ -180,7 +177,7 @@ func extractSections(source string) []*section {
 	isInComment := commentFinder()
 
 	for _, line := range strings.Split(source, "\n") {
-		// Determine if the line is a comment line, or the start of a `/*...*/` comment section.
+		// Determine if the line belongs to a comment.
 		if isInComment(line) {
 			// If currently in a Code group, switch to a new section.
 			if current.Code != "" {
@@ -188,10 +185,10 @@ func extractSections(source string) []*section {
 				current = new(section)
 			}
 			// Strip out any comment delimiter and add the line to the
-			// current doc section.
+			// Doc group.
 			current.Doc += allCommentDelims.ReplaceAllString(line, "") + "\n"
 		} else {
-			// add the current line to the Code group.
+			// Add the current line to the Code group.
 			current.Code += line + "\n"
 		}
 	}
@@ -248,7 +245,7 @@ func markdownCode(sections []*section) {
 }
 
 // ## Setup and running
-
+//
 // Locate the HTML template and CSS.
 func findResources() string {
 	if *resdir != "" {
