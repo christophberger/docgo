@@ -16,12 +16,14 @@
 	<div id="background"></div>
 	<div class="table">
 		{{range .Sections}}
-		<div class="tr section">
-			<div class="td doc">{{.Doc}}</div>
 			{{if ne .Code ""}}
-				<div class="td code"><pre><code>{{.Code}}</code></pre></div>
+				<div class="tr section">
+					<div class="td doc">{{.Doc}}</div>
+					<div class="td code"><pre><code>{{.Code}}</code></pre></div>
 			{{else}}
-				<div class="td code empty"></div>
+				<div class="tr section nocode">
+					<div class="td doc nocode">{{.Doc}}</div>
+					<div class="td code empty"></div>
 			{{end}}
 		</div>
 		{{end}}

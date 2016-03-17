@@ -1,3 +1,5 @@
+/* goweave CSS */
+
 body {
     background: #f0f0f0;
     margin: 0em;
@@ -8,7 +10,7 @@ body {
 }
 
 #goweave div.table {
-	display: table;
+	/*display: table;*/
 	border-collapse: collapse;
 }
 
@@ -96,6 +98,19 @@ body {
 #goweave .code pre code  {
     font-family: Menlo, Monaco, Consolas, "Lucida Console", monospace;
     color: rgb(120, 120, 120);
+}
+
+#goweave div.tr.section.nocode {
+	display: block;
+}
+
+#goweave div.td.doc.nocode {
+	display: block;
+	margin-right: auto;
+	margin-left: auto;
+}
+#goweave div.td.code.empty { 
+	display: none;
 }
 
 /* Narrow viewports */
