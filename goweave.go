@@ -14,12 +14,16 @@ valid Go source file, ready to be `go install`'ed.
 Options:
 
 * `-install`: Installs resource files into $HOME/.config/goweave.
-* `-resdir=<dir>`: Resource directory, defaults to the go get directory of goweave.
+* `-resdir=<dir>`: Resource directory(1).
 * `-outdir=<dir>`: Output directory. Defaults to the current directory.
 * `-csspath=<path>`: Output path for the CSS file. Defaults to the current directory.
 * `-inline`: Include the CSS into the HTML file. Does not work with `-bare`.
 * `-md`: Generate Markdown output rather than HTML.
 * `-bare`: Only generate the body part of the HTML document.
+
+(1) If -resdir is not given, goweave searches for "goweave/resources" first in the
+current dir, then in $HOME/config. If neither succeeds, it automatically installs
+the resource files into ./goweave/resources.
 
 goweave is based on the wonderful [docgo](https://github.com/dhconnelly/docgo)
 project by Daniel Connelly. Although I shuffled much of the code
