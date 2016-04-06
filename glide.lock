@@ -1,10 +1,10 @@
 hash: a2ed36e64e38e4e1961beac6015301b93b0e7e7cb1ce2b3d239224f23804faca
-updated: 2016-03-08T20:44:12.618082038+01:00
+updated: 2016-04-06T17:39:42.611127321+02:00
 imports:
 - name: github.com/dhconnelly/litebrite
   version: 74b2277232032bc5a47fa4e291f4219cd73b4437
 - name: github.com/russross/blackfriday
-  version: 006144af03eeeff1037240a71865a9fd61f1c25f
+  version: b43df972fb5fdf3af8d2e90f38a69d374fe26dd0
 - name: github.com/shurcooL/sanitized_anchor_name
   version: 10ef21a441db47d8b13ebcc5fd2310f636973c77
 devImports: []

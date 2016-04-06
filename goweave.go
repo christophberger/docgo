@@ -2,6 +2,10 @@
 /*
 # goweave
 
+**Generate docs from code like Literate Programming**
+
+## About
+
 goweave creates an HTML file from a Go source file, rendering comments and
 code side-by-side. Comments can use Markdown formatting as accepted by the
 MarkdownCommon() method of the BlackFriday library; see below for details.
@@ -11,19 +15,64 @@ Goweave is meant to work like "weave" in [Literate Programming]
 no "tangle" counterpart is required, as the source document is already a
 valid Go source file, ready to be `go install`'ed.
 
-Options:
+## Use Cases
+
+* Read code and comments side-by-side (if your browser's viewport is wide enough).
+* Generate blog articles from a single code file.
+
+## Getting Started
+
+1. Install goweave through go get.
+
+	go get github.com/christophberger/goweave
+
+2. Run goweave on a Go file with comments:
+
+	goweave mycode.go
+
+3. Open the generated mycode.html in a browser.
+
+
+## Options
 
 * `-install`: Installs resource files into $HOME/.config/goweave.
-* `-resdir=<dir>`: Resource directory(1).
+* `-resdir=<dir>`: Resource directory.(1)
 * `-outdir=<dir>`: Output directory. Defaults to the current directory.
 * `-csspath=<path>`: Output path for the CSS file. Defaults to the current directory.
+* `-bare`: Only generate the body part of the HTML document. (No CSS file references is
+  included then, use -inline instead or add the CSS reference manually in your HTML
+  header.
 * `-inline`: Include the CSS into the HTML file. Does not work with `-bare`.
-* `-md`: Generate Markdown output rather than HTML.
-* `-bare`: Only generate the body part of the HTML document.
+* `-md`: Generate Markdown output rather than HTML.(2)
+* `-intro`: Only process the very first comment (which should be some intro text that
+  can be read as-is). Comes handy with -md for generating a README.md.
 
 (1) If -resdir is not given, goweave searches for "goweave/resources" first in the
 current dir, then in $HOME/config. If neither succeeds, it automatically installs
 the resource files into ./goweave/resources.
+
+(2) If you generate a Markdown document instead of HTML, you need to provide your
+own CSS that matches the output of your Markdown renderer.
+
+Also ensure your Markdown renderer is able to process "```go" code fences correctly.
+
+Side-by-side rendering of comments and code does not work in this mode unless you
+tweak your CSS and/or your markdown renderer accordingly.
+
+
+## Notes
+
+### Full-width sections
+
+If a comment is not followed by code but rather by another comment (separated
+by an empty line), this comment gets rendered in the center of the document and
+without a code column.
+
+This is useful for intro sections, or for separating long code files.
+
+###
+
+## Origins
 
 goweave is based on the wonderful [docgo](https://github.com/dhconnelly/docgo)
 project by Daniel Connelly. Although I shuffled much of the code
@@ -41,11 +90,8 @@ using [Russ Ross] (http://github.com/russross)'s [BlackFriday]
 syntax-highlighted using [litebrite](http://dhconnelly.github.com/litebrite),
 a Go syntax highlighting library.
 
-Optionally you can generate a Markdown document instead of HTML. In this case,
-you need to provide your own CSS that matches the output of your Markdown
-renderer.
-Also ensure your Markdown renderer is able to process "```go" code fences correctly.
 
+## Licenses
 
 goweave is copyright 2016 by Christoph Berger. All rights reserved.
 This source code is governed by a BSD-style license that can be found in
@@ -101,6 +147,7 @@ var (
 	bare             = flag.Bool("bare", false, "generate the HTML body only")
 	inline           = flag.Bool("inline", false, "generate inline CSS")
 	installResources = flag.Bool("install", false, "install resource files into .config/goweave")
+	intro            = flag.Bool("intro", false, "Only process the first comment section (that should contain some intro text).")
 	cssfilename      = "goweave.css"
 	tplfilename      = "goweave.templ"
 	configDir        = filepath.Join(GetHomeDir(), ".config", "goweave")
@@ -142,7 +189,9 @@ func GenerateDocs(title, src string) (result string) {
 		}
 		result = b.String()
 	} else {
-		markdownCode(sections)
+		if !*intro {
+			markdownCode(sections)
+		}
 		result = joinSections(sections)
 	}
 	return result
@@ -209,7 +258,12 @@ func extractSections(source string) []*section {
 			// Strip out any comment delimiter and add the line to the
 			// Doc group.
 			current.Doc += allCommentDelims.ReplaceAllString(line, "") + "\n"
+
 		} else {
+			// Stop here if only the intro text shall be rendered.
+			if *intro {
+				break
+			}
 			// Add the current line to the Code group.
 			current.Code += line + "\n"
 		}

@@ -1,4 +1,4 @@
-package: github.com/christophberger/docgo
+package: github.com/christophberger/goweave
 import:
 - package: github.com/dhconnelly/litebrite
 - package: github.com/russross/blackfriday
