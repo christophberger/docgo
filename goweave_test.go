@@ -44,6 +44,25 @@ func TestCommentFinder(t *testing.T) {
 	}
 }
 
+func TestIsDirective(t *testing.T) {
+	tests := []struct {
+		line string
+		want bool
+	}{
+		{"//go:generate blah blah", true},
+		{"//go:newdirective blah blah", true},
+		{"// go:generate blah blah", false},
+		{"/*go:generate blah blah", false},
+		{"/* go:generate blah blah", false},
+		{"//gotcha", false},
+	}
+	for _, tt := range tests {
+		if got := isDirective(tt.line); got != tt.want {
+			t.Errorf("isDirective(%s) = %v, want %v", tt.line, got, tt.want)
+		}
+	}
+}
+
 func TestExtractSections(t *testing.T) {
 	tests := []struct {
 		source string

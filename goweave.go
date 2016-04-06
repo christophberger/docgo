@@ -1,3 +1,4 @@
+//go:generate go-bindata -o resources.go resources
 /*
 # goweave
 
@@ -12,6 +13,7 @@ valid Go source file, ready to be `go install`'ed.
 
 Options:
 
+* `-install`: Installs resource files into $HOME/.config/goweave.
 * `-resdir=<dir>`: Resource directory, defaults to the go get directory of goweave.
 * `-outdir=<dir>`: Output directory. Defaults to the current directory.
 * `-csspath=<path>`: Output path for the CSS file. Defaults to the current directory.
@@ -65,6 +67,7 @@ import (
 	"go/build"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -82,9 +85,11 @@ var (
 	commentPtrn      = `^\s*//\s?`
 	commentStartPtrn = `^\s*/\*\s?`
 	commentEndPtrn   = `\s?\*/\s*$`
+	directivePtrn    = `^//go:`
 	comment          = regexp.MustCompile(commentPtrn)      // pattern for single-line comments
 	commentStart     = regexp.MustCompile(commentStartPtrn) // pattern for /* comment delimiter
 	commentEnd       = regexp.MustCompile(commentEndPtrn)   // pattern for */ comment delimiter
+	directive        = regexp.MustCompile(directivePtrn)    // pattern for //go: directive, like //go:generate
 	allCommentDelims = regexp.MustCompile(commentPtrn + "|" + commentStartPtrn + "|" + commentEndPtrn)
 	outdir           = flag.String("outdir", ".", "output directory for html & css")
 	resdir           = flag.String("resdir", ".", "directory containing CSS and templates")
@@ -92,8 +97,10 @@ var (
 	md               = flag.Bool("md", false, "generate Markdown document (default: HTML)")
 	bare             = flag.Bool("bare", false, "generate the HTML body only")
 	inline           = flag.Bool("inline", false, "generate inline CSS")
+	installResources = flag.Bool("install", false, "install resource files into .config/goweave")
 	cssfilename      = "goweave.css"
 	tplfilename      = "goweave.templ"
+	configDir        = filepath.Join(GetHomeDir(), ".config", "goweave")
 	pkg              = "github.com/christophberger/goweave" // for locating the resources if not specified
 )
 
@@ -169,6 +176,14 @@ func commentFinder() func(string) bool {
 	}
 }
 
+// isDirective returns true if the input argument is a Go directive.
+func isDirective(line string) bool {
+	if directive.FindString(line) != "" {
+		return true
+	}
+	return false
+}
+
 // Split the source into sections, where each section contains a comment group
 // and the code that follows that group.
 func extractSections(source string) []*section {
@@ -177,6 +192,10 @@ func extractSections(source string) []*section {
 	isInComment := commentFinder()
 
 	for _, line := range strings.Split(source, "\n") {
+		// Determine if the line is a Go directive like //go:generate
+		if isDirective(line) {
+			continue
+		}
 		// Determine if the line belongs to a comment.
 		if isInComment(line) {
 			// If currently in a Code group, switch to a new section.
@@ -358,8 +377,37 @@ func processFile(filename string) {
 	}
 }
 
+// GetHomeDir finds the user's home directory in an OS-independent way.
+// "OS-independent" means compatible with most Unix-like operating systems as well as with Microsoft Windows(TM).
+func GetHomeDir() string {
+	// credits for this OS-independent solution go to http://stackoverflow.com/a/7922977
+	// (os.User is not an option here. It relies on CGO and thus prevents cross compiling.)
+	home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
+	if home == "" {
+		home = os.Getenv("USERPROFILE")
+	}
+	if home == "" {
+		home = os.Getenv("HOME")
+	}
+	return home
+}
+
+// install writes the CSS and Template files into ~/.config/goweave.
+// The source files are stored in the binary via go-bindata.
+// If you change the original CSS or Template files in the git/go workspace,
+// run go generate.
+func install(targetDir string) error {
+	return RestoreAssets(targetDir, "resources")
+}
+
 func main() {
 	flag.Parse()
+	if *installResources {
+		if install(configDir) != nil {
+			log.Fatal("Unable to install the resource files into '" + configDir + "'.")
+		}
+		return
+	}
 	loadResources(findResources())
 	for _, filename := range flag.Args() {
 		processFile(filename)
