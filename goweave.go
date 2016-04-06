@@ -64,7 +64,6 @@ package main
 import (
 	"bytes"
 	"flag"
-	"go/build"
 	"io"
 	"io/ioutil"
 	"log"
@@ -92,7 +91,7 @@ var (
 	directive        = regexp.MustCompile(directivePtrn)    // pattern for //go: directive, like //go:generate
 	allCommentDelims = regexp.MustCompile(commentPtrn + "|" + commentStartPtrn + "|" + commentEndPtrn)
 	outdir           = flag.String("outdir", ".", "output directory for html & css")
-	resdir           = flag.String("resdir", ".", "directory containing CSS and templates")
+	resdir           = flag.String("resdir", "", "directory containing CSS and templates")
 	csspath          = flag.String("csspath", "", "relative path to CSS file, for use with the <link> element")
 	md               = flag.Bool("md", false, "generate Markdown document (default: HTML)")
 	bare             = flag.Bool("bare", false, "generate the HTML body only")
@@ -101,7 +100,7 @@ var (
 	cssfilename      = "goweave.css"
 	tplfilename      = "goweave.templ"
 	configDir        = filepath.Join(GetHomeDir(), ".config", "goweave")
-	pkg              = "github.com/christophberger/goweave" // for locating the resources if not specified
+	resourcedir      = "" // resource directory as determined by findResources()
 )
 
 // ## Generating documentation
@@ -267,29 +266,51 @@ func markdownCode(sections []*section) {
 //
 // Locate the HTML template and CSS.
 func findResources() string {
+	// If a custom resource dir is given, use that.
 	if *resdir != "" {
 		return *resdir
 	}
 
-	// find the path to the package root to locate the resource files
-	p, err := build.Default.Import(pkg, "", build.FindOnly)
-	if err != nil {
-		panic(err.Error())
+	// If there is a "goweave" directory in the current path,
+	// and if it contains the css and templ files, use that.
+	path := filepath.Join("goweave", "resources")
+	res, err := os.Open(path)
+	if err == nil {
+		res.Close()
+		css, err := os.Open(filepath.Join(path, cssfilename))
+		if err == nil {
+			css.Close()
+			return path
+		}
 	}
-	return p.Dir
+
+	// Else try to use the files in $HOME/.config/goweave.
+	path = filepath.Join(configDir, "resources")
+	cssFile, err := os.Open(filepath.Join(path, cssfilename))
+	if err == nil {
+		cssFile.Close()
+		return path
+	}
+
+	// If none of the above was successful, install the resource files from
+	// the binary (under "resources") into ./goweave.
+	if install("goweave") != nil {
+		log.Fatal("Unable to install the resource files into './goweave'.")
+	}
+	return filepath.Join("goweave", "resources")
 }
 
 // Load the HTML template.
 // Load the CSS if it shall be inlined.
 func loadResources(path string) {
 	if *inline {
-		data, err := ioutil.ReadFile(path + "/goweave.css")
+		data, err := ioutil.ReadFile(filepath.Join(path, "goweave.css"))
 		if err != nil {
 			panic(err.Error())
 		}
 		style = string(data)
 	}
-	templ = template.Must(template.ParseFiles(path + string(os.PathSeparator) + tplfilename))
+	templ = template.Must(template.ParseFiles(filepath.Join(path, tplfilename)))
 }
 
 // copyFile copies the contents of src to dst atomically.
@@ -332,9 +353,8 @@ func copyFile(dst, src string) error {
 // goweave -csspath=css ...
 func copyCssFile() {
 	// Copy only if dest path != source path
-	ps := string(os.PathSeparator)
-	src := path.Clean(*resdir + ps + cssfilename)
-	dst := path.Clean(*outdir + ps + *csspath)
+	src := filepath.Join(resourcedir, cssfilename)
+	dst := filepath.Join(*outdir, *csspath)
 
 	if os.Chdir(dst) != nil {
 		err := os.MkdirAll(dst, os.ModeDir)
@@ -346,7 +366,7 @@ func copyCssFile() {
 			panic(err.Error())
 		}
 	}
-	dst += ps + cssfilename
+	dst = filepath.Join(dst, cssfilename)
 	if dst != src {
 		err := copyFile(dst, src)
 		if err != nil {
@@ -408,7 +428,8 @@ func main() {
 		}
 		return
 	}
-	loadResources(findResources())
+	resourcedir = findResources()
+	loadResources(resourcedir)
 	for _, filename := range flag.Args() {
 		processFile(filename)
 	}
