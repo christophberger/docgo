@@ -1,3 +1,4 @@
+
 # goweave
 
 **Generate docs from code like Literate Programming**
@@ -36,7 +37,8 @@ valid Go source file, ready to be `go install`'ed.
 * `-install`: Installs resource files into $HOME/.config/goweave.
 * `-resdir=<dir>`: Resource directory.(1)
 * `-outdir=<dir>`: Output directory. Defaults to the current directory.
-* `-csspath=<path>`: Output path for the CSS file. Defaults to the current directory.
+* `-csspath=<path>`: Output path for the CSS file, relative to the output directory.
+  Defaults to the current directory.
 * `-bare`: Only generate the body part of the HTML document. (No CSS file references is
   included then, use -inline instead or add the CSS reference manually in your HTML
   header.
