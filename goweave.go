@@ -38,7 +38,8 @@ valid Go source file, ready to be `go install`'ed.
 * `-install`: Installs resource files into $HOME/.config/goweave.
 * `-resdir=<dir>`: Resource directory.(1)
 * `-outdir=<dir>`: Output directory. Defaults to the current directory.
-* `-csspath=<path>`: Output path for the CSS file. Defaults to the current directory.
+* `-csspath=<path>`: Output path for the CSS file, relative to the output directory.
+  Defaults to the current directory.
 * `-bare`: Only generate the body part of the HTML document. (No CSS file references is
   included then, use -inline instead or add the CSS reference manually in your HTML
   header.
@@ -68,9 +69,9 @@ If a comment is not followed by code but rather by another comment (separated
 by an empty line), this comment gets rendered in the center of the document and
 without a code column.
 
-This is useful for intro sections, or for separating long code files.
+This can be useful for creating intro sections or READMEs, or for splitting
+long code into separate snippets.
 
-###
 
 ## Origins
 
@@ -183,13 +184,14 @@ func GenerateDocs(title, src string) (result string) {
 		if len(*csspath) > 0 {
 			cleanCssPath = path.Clean(*csspath) + string(os.PathSeparator)
 		}
+		// Now apply the template.
 		err := templ.Execute(&b, docs{title, sections, cleanCssPath + cssfilename, style, !*bare, *inline})
 		if err != nil {
 			panic(err.Error())
 		}
 		result = b.String()
 	} else {
-		if !*intro {
+		if !*intro { // Skip this if rendering the intro text only, to avoid an empty code block in the output.
 			markdownCode(sections)
 		}
 		result = joinSections(sections)
@@ -244,7 +246,7 @@ func extractSections(source string) []*section {
 	isInComment := commentFinder()
 
 	for _, line := range strings.Split(source, "\n") {
-		// Determine if the line is a Go directive like //go:generate
+		// Skip the line if it is a Go directive like //go:generate
 		if isDirective(line) {
 			continue
 		}
