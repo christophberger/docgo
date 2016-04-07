@@ -1,60 +1,106 @@
-docgo
-=====
+# goweave
 
-documentation generator for golang programs
+**Generate docs from code like Literate Programming**
 
-About
------
+## About
 
-`docgo` is a literate-programming-style documentation generator for Go source
-code modeled on Jeremy Ashkenas's [`docco`](http://jashkenas.github.com/docco).
-See [here](http://dhconnelly.github.com/docgo/docgo.html) for the result of
-running docgo on its own source code.
+goweave creates an HTML file from a Go source file, rendering comments and
+code side-by-side. Comments can use Markdown formatting as accepted by the
+MarkdownCommon() method of the BlackFriday library; see below for details.
 
-Getting Started
----------------
+Goweave is meant to work like "weave" in [Literate Programming]
+(https://en.wikipedia.org/wiki/Literate_programming). Unlike in Literate Programming,
+no "tangle" counterpart is required, as the source document is already a
+valid Go source file, ready to be `go install`'ed.
 
-Get the source code from [GitHub](https://github.com/dhconnelly/docgo) and
-do `go install`, or just run `go get github.com/dhconnelly/docgo`.
+## Use Cases
 
-Then run `docgo source.go` where source.go is a Go source file in the current
-directory.  This creates the file `source.html` in the current directory, a
-self-contained HTML page containing your annotated source code.
+* Read code and comments side-by-side (if your browser's viewport is wide enough).
+* Generate blog articles from a single code file.
 
-Author
-------
+## Getting Started
 
-Written by [Daniel Connelly](http://dhconnelly.com) (<dhconnelly@gmail.com>).
+1. Install goweave through go get.
 
-License
--------
+	go get github.com/christophberger/goweave
 
-docgo is released under a BSD-style license, described here and in the
-`LICENSE.md` file:
+2. Run goweave on a Go file with comments:
 
-Copyright (c) 2012, Daniel Connelly. All rights reserved.
+	goweave mycode.go
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
+3. Open the generated mycode.html in a browser.
 
-1. Redistributions of source code must retain the above copyright notice, this
-   list of conditions and the following disclaimer.
 
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
+## Options
 
-3. Neither the name of Daniel Connelly nor the names of its contributors may be
-   used to endorse or promote products derived from this software without
-   specific prior written permission.
+* `-install`: Installs resource files into $HOME/.config/goweave.
+* `-resdir=<dir>`: Resource directory.(1)
+* `-outdir=<dir>`: Output directory. Defaults to the current directory.
+* `-csspath=<path>`: Output path for the CSS file. Defaults to the current directory.
+* `-bare`: Only generate the body part of the HTML document. (No CSS file references is
+  included then, use -inline instead or add the CSS reference manually in your HTML
+  header.
+* `-inline`: Include the CSS into the HTML file. Does not work with `-bare`.
+* `-md`: Generate Markdown output rather than HTML.(2)
+* `-intro`: Only process the very first comment (which should be some intro text that
+  can be read as-is). Comes handy with -md for generating a README.md.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+(1) If -resdir is not given, goweave searches for "goweave/resources" first in the
+current dir, then in $HOME/config. If neither succeeds, it automatically installs
+the resource files into ./goweave/resources.
+
+(2) If you generate a Markdown document instead of HTML, you need to provide your
+own CSS that matches the output of your Markdown renderer.
+
+Also ensure your Markdown renderer is able to process "```go" code fences correctly.
+
+Side-by-side rendering of comments and code does not work in this mode unless you
+tweak your CSS and/or your markdown renderer accordingly.
+
+
+## Notes
+
+### Full-width sections
+
+If a comment is not followed by code but rather by another comment (separated
+by an empty line), this comment gets rendered in the center of the document and
+without a code column.
+
+This can be useful for creating intro sections or READMEs, or for splitting
+long code into separate snippets.
+
+
+## Origins
+
+goweave is based on the wonderful [docgo](https://github.com/dhconnelly/docgo)
+project by Daniel Connelly. Although I shuffled much of the code
+around, added new code, removed some, and finally ended up with substantial
+changes to the resulting behavior, docgo saved me a lot--a LOT!--of time as
+it had all the groundworks already done for me.
+
+docgo in turn is a [Go](http://golang.org) implementation of [Jeremy Ashkenas]
+(http://github.com/jashkenas)'s [docco] (http://jashkenas.github.com/docco/),
+a literate-programming-style documentation generator.
+
+Comments are processed by [Markdown] (http://daringfireball.net/projects/markdown)
+using [Russ Ross] (http://github.com/russross)'s [BlackFriday]
+(http://github.com/russross/blackfriday) library, and code is
+syntax-highlighted using [litebrite](http://dhconnelly.github.com/litebrite),
+a Go syntax highlighting library.
+
+
+## Licenses
+
+goweave is copyright 2016 by Christoph Berger. All rights reserved.
+This source code is governed by a BSD-style license that can be found in
+the `LICENSE.txt` file.
+
+Parts of the code are copyright 2012 by Daniel Connelly. See `LICENSE_godoc`.
+
+License files for litebrite, blackfriday, and the CopyFile function from
+github.com/pkg/fileutils/copy.go:
+
+* LICENSE_litebrite.md
+* LICENSE_blackfriday.txt
+* LICENSE_CopyFile.txt
+
