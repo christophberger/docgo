@@ -10,7 +10,7 @@ body {
 }
 
 #goweave div.table {
-	/*display: table;*/
+	display: table;
 	border-collapse: collapse;
 }
 
@@ -59,11 +59,11 @@ body {
     text-align: left;
     margin-top: 0em;
     margin-right: 0em;
-    margin-bottom: 1.6em;
+    margin-bottom: 1em;
     margin-left: 0em;
 }
 
-#goweave h1 {
+#goweave .nocode h1, .nocode h2, .nocode h3, .nocode h4, .nocode h5 {
     margin-top: 1.6em;
 }
 
