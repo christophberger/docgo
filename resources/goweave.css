@@ -1,7 +1,7 @@
 /* goweave CSS */
 
 body {
-    background: #f0f0f0;
+    background-color: #f0f0f0;
     margin: 0em;
     padding: 0em;
     font-family: 'Lato', 'Helvetica', sans-serif;
@@ -155,3 +155,35 @@ only screen and (max-width: 45em) {
 	}
 }
 
+@media
+print {
+
+	body {
+		background-color: #fff;
+	}
+
+	#goweave .code {
+		background-color: #fff;
+	}
+
+	#goweave .keyword {
+		color: #f2a14b;
+	}
+
+	#goweave .literal {
+		color: #8cbe64;
+	}
+
+	#goweave .ident {
+		color: white;
+	}
+
+	#goweave .operator {
+		color: white;
+	}
+
+	#goweave .comment {
+		color: #aaa
+	}
+
+}
