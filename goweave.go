@@ -301,7 +301,13 @@ func splitLeadingWs(s string) (string, string) {
 
 // Apply syntax highlighting to each section's code.
 func highlightCode(sections []*section) {
-	h := litebrite.Highlighter{"operator", "ident", "literal", "keyword", "comment"}
+	h := litebrite.Highlighter{
+		OperatorClass: "operator",
+		IdentClass:    "ident",
+		LiteralClass:  "literal",
+		KeywordClass:  "keyword",
+		CommentClass:  "comment",
+	}
 	for i := range sections {
 		s := sections[i].Code
 		if strings.TrimSpace(strings.Trim(s, "\n")) != "" {
@@ -337,9 +343,9 @@ func findResources() string {
 	res, err := os.Open(path)
 	if err == nil {
 		res.Close()
-		css, err := os.Open(filepath.Join(path, cssfilename))
+		res, err = os.Open(filepath.Join(path, cssfilename))
 		if err == nil {
-			css.Close()
+			res.Close()
 			return path
 		}
 	}
