@@ -22,15 +22,25 @@ valid Go source file, ready to be `go install`'ed.
 
 ## Getting Started
 
-1. Install goweave through go get.
+1. Install goweave and its dependencies through go get:
 
-        go get github.com/christophberger/goweave
+        go get github.com/christophberger/goweave/...
 
-2. Run goweave on a Go file with comments:
+2. If you plan to modify files in the `resources/` folder, install go-bindata...
+
+		go get github.com/jteeuwen/go-bindata
+
+   ...and run `go generate` each time you modify the CSS file or the template file.
+
+3. (Optional) Install the CSS and template files into `~/.config/goweave`:
+
+		goweave -install
+
+4. Run goweave on a Go file with comments:
 
         goweave mycode.go
 
-3. Open the generated mycode.html in a browser.
+5. Open the generated mycode.html in a browser.
 
 
 ## Options
