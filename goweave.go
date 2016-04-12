@@ -151,7 +151,7 @@ var (
 	intro            = flag.Bool("intro", false, "Only process the first comment section (that should contain some intro text).")
 	cssfilename      = "goweave.css"
 	tplfilename      = "goweave.templ"
-	configDir        = filepath.Join(GetHomeDir(), ".config", "goweave")
+	configDir        = filepath.Join(getHomeDir(), ".config", "goweave")
 	resourcedir      = "" // resource directory as determined by findResources()
 )
 
@@ -173,7 +173,7 @@ type section struct {
 
 // Extract comments from source code, pass them through markdown, highlight the
 // code, and render to a string.
-func GenerateDocs(title, src string) (result string) {
+func generateDocs(title, src string) (result string) {
 	sections := extractSections(src)
 
 	if !*md {
@@ -453,7 +453,7 @@ func processFile(filename string) {
 		ext = "md"
 	}
 	outname := filepath.Join(*outdir, name[:len(name)-2]) + ext
-	docs := GenerateDocs(name, string(src))
+	docs := generateDocs(name, string(src))
 	err = ioutil.WriteFile(outname, []byte(docs), 0666)
 	if err != nil {
 		panic(err.Error())
@@ -463,9 +463,9 @@ func processFile(filename string) {
 	}
 }
 
-// GetHomeDir finds the user's home directory in an OS-independent way.
+// getHomeDir finds the user's home directory in an OS-independent way.
 // "OS-independent" means compatible with most Unix-like operating systems as well as with Microsoft Windows(TM).
-func GetHomeDir() string {
+func getHomeDir() string {
 	// credits for this OS-independent solution go to http://stackoverflow.com/a/7922977
 	// (os.User is not an option here. It relies on CGO and thus prevents cross compiling.)
 	home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
