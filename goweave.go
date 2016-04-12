@@ -24,18 +24,18 @@ valid Go source file, ready to be `go install`'ed.
 
 1. Install goweave through go get.
 
-	go get github.com/christophberger/goweave
+        go get github.com/christophberger/goweave
 
 2. Run goweave on a Go file with comments:
 
-	goweave mycode.go
+        goweave mycode.go
 
 3. Open the generated mycode.html in a browser.
 
 
 ## Options
 
-* `-install`: Installs resource files into $HOME/.config/goweave.
+* `-install`: Installs resource files into `$HOME/.config/goweave`.
 * `-resdir=<dir>`: Resource directory.(1)
 * `-outdir=<dir>`: Output directory. Defaults to the current directory.
 * `-csspath=<path>`: Output path for the CSS file, relative to the output directory.
@@ -46,17 +46,16 @@ valid Go source file, ready to be `go install`'ed.
 * `-inline`: Include the CSS into the HTML file. Does not work with `-bare`.
 * `-md`: Generate Markdown output rather than HTML.(2)
 * `-intro`: Only process the very first comment (which should be some intro text that
-  can be read as-is). Comes handy with -md for generating a README.md.
+  can be read as-is). Together with -md this comes handy for easily generating a
+  README.md from the source.
 
-(1) If -resdir is not given, goweave searches for "goweave/resources" first in the
+(1) If -resdir is not given, goweave searches for `goweave/resources` first in the
 current dir, then in $HOME/config. If neither succeeds, it automatically installs
-the resource files into ./goweave/resources.
+the resource files into `./goweave/resources`.
 
 (2) If you generate a Markdown document instead of HTML, you need to provide your
-own CSS that matches the output of your Markdown renderer.
-
-Also ensure your Markdown renderer is able to process "```go" code fences correctly.
-
+own CSS that matches the output of your Markdown renderer.\
+Also ensure your Markdown renderer is able to process "```go" code fences correctly.\
 Side-by-side rendering of comments and code does not work in this mode unless you
 tweak your CSS and/or your markdown renderer accordingly.
 
@@ -76,10 +75,10 @@ long code into separate snippets.
 ## Origins
 
 goweave is based on the wonderful [docgo](https://github.com/dhconnelly/docgo)
-project by Daniel Connelly. Although I shuffled much of the code
-around, added new code, removed some, and finally ended up with substantial
-changes to the resulting behavior, docgo saved me a lot--a LOT!--of time as
-it had all the groundworks already done for me.
+project by [Daniel Connelly](https://github.com/dhconnelly). Although I
+shuffled much of the code around, added new code, removed some, and finally
+ended up with substantial changes to the resulting behavior, docgo saved me
+a lot--a LOT!--of time as it had all the groundworks already done for me.
 
 docgo in turn is a [Go](http://golang.org) implementation of [Jeremy Ashkenas]
 (http://github.com/jashkenas)'s [docco] (http://jashkenas.github.com/docco/),
@@ -94,21 +93,22 @@ a Go syntax highlighting library.
 
 ## Licenses
 
-goweave is copyright 2016 by Christoph Berger. All rights reserved.
 This source code is governed by a BSD-style license that can be found in
 the `LICENSE.txt` file.
 
-Parts of the code are copyright 2012 by Daniel Connelly. See `LICENSE_godoc`.
+The original docgo code is copyright 2012 by Daniel Connelly. See `LICENSE_godoc`.
 
-License files for litebrite, blackfriday, and the CopyFile function from
-github.com/pkg/fileutils/copy.go:
+See these files for the licenses of litebrite, blackfriday, and the CopyFile function
+from github.com/pkg/fileutils/copy.go:
 
 * LICENSE_litebrite.md
 * LICENSE_blackfriday.txt
 * LICENSE_CopyFile.txt
 */
 
-// ## Imports and globals
+// ## The code
+
+// ### Imports and globals
 //
 package main
 
@@ -155,7 +155,7 @@ var (
 	resourcedir      = "" // resource directory as determined by findResources()
 )
 
-// ## Generating documentation
+// ### Generating documentation
 //
 type docs struct {
 	Filename  string
@@ -199,7 +199,7 @@ func generateDocs(title, src string) (result string) {
 	return result
 }
 
-// ## Processing sections
+// ### Processing sections
 //
 // Determine if the current line belongs to a comment region. A comment region
 // is either a comment line (starting with `//`) or a `/*...*/` multi-line comment.
@@ -241,7 +241,7 @@ func isDirective(line string) bool {
 // Split the source into sections, where each section contains a comment group
 // and the code that follows that group.
 func extractSections(source string) []*section {
-	sections := make([]*section, 0)
+	var sections []*section
 	current := new(section)
 	isInComment := commentFinder()
 
@@ -282,12 +282,40 @@ func joinSections(sections []*section) (res string) {
 	return res
 }
 
+// markdownString applies markdown to the input string, using the
+// commonHtmlFlags and commonExtensions as defined in blackfriday/markdown.go,
+// plus HTML_HREF_TARGET_BLANK.
+func markdownString(input string) string {
+	const (
+		htmlFlags = 0 |
+			blackfriday.HTML_USE_XHTML |
+			blackfriday.HTML_USE_SMARTYPANTS |
+			blackfriday.HTML_SMARTYPANTS_FRACTIONS |
+			blackfriday.HTML_SMARTYPANTS_DASHES |
+			blackfriday.HTML_HREF_TARGET_BLANK
+
+		extensions = 0 |
+			blackfriday.EXTENSION_NO_INTRA_EMPHASIS |
+			blackfriday.EXTENSION_TABLES |
+			blackfriday.EXTENSION_FENCED_CODE |
+			blackfriday.EXTENSION_AUTOLINK |
+			blackfriday.EXTENSION_STRIKETHROUGH |
+			blackfriday.EXTENSION_SPACE_HEADERS |
+			blackfriday.EXTENSION_HEADER_IDS |
+			blackfriday.EXTENSION_BACKSLASH_LINE_BREAK |
+			blackfriday.EXTENSION_DEFINITION_LISTS
+	)
+	renderer := blackfriday.HtmlRenderer(htmlFlags, "", "")
+	return string(blackfriday.MarkdownOptions([]byte(input), renderer,
+		blackfriday.Options{Extensions: extensions}))
+}
+
 // Apply markdown to each section's documentation.
 func markdownComments(sections []*section) {
 	for _, section := range sections {
-		// IMHO BlackFriday should use a string interface, since it
-		// operates on text (not arbitrary binary) data...
-		section.Doc = string(blackfriday.MarkdownCommon([]byte(section.Doc)))
+		// MarkdownCommon() enables a couple of common Markdown extensions, like
+		// Smartypants, tables, fenced code blocks, and more.
+		section.Doc = markdownString(section.Doc)
 	}
 }
 
@@ -328,7 +356,7 @@ func markdownCode(sections []*section) {
 	}
 }
 
-// ## Setup and running
+// ### Setup and running
 //
 // Locate the HTML template and CSS.
 func findResources() string {
@@ -342,10 +370,10 @@ func findResources() string {
 	path := filepath.Join("goweave", "resources")
 	res, err := os.Open(path)
 	if err == nil {
-		res.Close()
+		_ = res.Close() // An error here is harmless, as we only checked for existence.
 		res, err = os.Open(filepath.Join(path, cssfilename))
 		if err == nil {
-			res.Close()
+			_ = res.Close() // Same here.
 			return path
 		}
 	}
@@ -354,7 +382,7 @@ func findResources() string {
 	path = filepath.Join(configDir, "resources")
 	cssFile, err := os.Open(filepath.Join(path, cssfilename))
 	if err == nil {
-		cssFile.Close()
+		_ = cssFile.Close()
 		return path
 	}
 
@@ -464,10 +492,10 @@ func processFile(filename string) {
 }
 
 // getHomeDir finds the user's home directory in an OS-independent way.
-// "OS-independent" means compatible with most Unix-like operating systems as well as with Microsoft Windows(TM).
+// "OS-independent" means compatible with most Unix-like operating systems as well as with Microsoft Windows(TM).\
+// Credits for the OS-independent approach used here go to http://stackoverflow.com/a/7922977.
+// (os.User is not an option here. It relies on CGO and thus prevents cross compiling.)
 func getHomeDir() string {
-	// credits for this OS-independent solution go to http://stackoverflow.com/a/7922977
-	// (os.User is not an option here. It relies on CGO and thus prevents cross compiling.)
 	home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
 	if home == "" {
 		home = os.Getenv("USERPROFILE")

@@ -16,8 +16,8 @@ func TestGenerateDocs(t *testing.T) {
 	// TODO: Add test cases.
 	}
 	for _, tt := range tests {
-		if got := GenerateDocs(tt.title, tt.src); got != tt.want {
-			t.Errorf("%q. GenerateDocs() = %v, want %v", tt.title, got, tt.want)
+		if got := generateDocs(tt.title, tt.src); got != tt.want {
+			t.Errorf("%q. generateDocs() = %v, want %v", tt.title, got, tt.want)
 		}
 	}
 }
