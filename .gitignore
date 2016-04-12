@@ -1,3 +1,6 @@
 *.html
+*.*~
+*.sw*
+*.bak
 goweave.md
 goweave.css
