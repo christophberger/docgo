@@ -1,4 +1,9 @@
-/* goweave CSS */
+/* goweave CSS 
+
+ Most measurements are given in em. See [The Goldilocks Approach](http://goldilocksapproach.com/demo/)
+ for the rationale behind this.
+ 
+ */
 
 body {
     background-color: #f0f0f0;
